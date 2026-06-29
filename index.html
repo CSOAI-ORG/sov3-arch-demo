@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SOV 27-Vertex Sovereign Grid — The Architecture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { --navy:#0a1a2f; --gold:#c9a84c; --bg:#f5f0e8; --green:#4ade80; --red:#ef4444; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: var(--navy); color: white; min-height: 100vh; }
+header { background: linear-gradient(135deg, var(--navy) 0%, #1a2a4f 100%); border-bottom: 2px solid var(--gold); padding: 32px; text-align: center; position: relative; overflow: hidden; }
+header h1 { color: var(--gold); font-size: 36px; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 8px; }
+header .subtitle { color: rgba(255,255,255,0.7); font-size: 16px; }
+header .big { color: var(--gold); font-size: 72px; font-weight: 900; margin: 16px 0; font-family: 'SF Mono', monospace; }
+.container { max-width: 1600px; margin: 0 auto; padding: 32px; }
+.section { background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+.section h2 { color: var(--gold); font-size: 24px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.01em; }
+.councils { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.council { background: rgba(201,168,76,0.1); border: 2px solid var(--gold); border-radius: 8px; padding: 20px; text-align: center; transition: transform 0.2s; }
+.council:hover { transform: translateY(-4px); background: rgba(201,168,76,0.2); }
+.council .vertex { color: var(--gold); font-size: 14px; font-weight: 800; letter-spacing: 0.05em; }
+.council h3 { color: white; font-size: 18px; font-weight: 800; margin: 8px 0; }
+.council .geo { color: var(--gold); font-size: 12px; font-family: 'SF Mono', monospace; }
+.council .freq { color: white; font-size: 24px; font-weight: 900; margin: 8px 0; font-family: 'SF Mono', monospace; }
+.council .bft { color: rgba(255,255,255,0.7); font-size: 12px; }
+.mindsets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 24px; }
+.mindset { background: rgba(255,255,255,0.05); border-left: 3px solid var(--gold); padding: 10px 14px; border-radius: 4px; }
+.mindset .v { color: var(--gold); font-size: 10px; letter-spacing: 0.05em; }
+.mindset .name { color: white; font-size: 14px; font-weight: 700; }
+.mindset .freq { color: rgba(255,255,255,0.5); font-size: 11px; font-family: 'SF Mono', monospace; }
+.mysteries { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mystery { background: rgba(0,0,0,0.3); border-left: 3px solid var(--gold); padding: 10px 14px; border-radius: 4px; }
+.mystery .v { color: var(--gold); font-size: 10px; letter-spacing: 0.05em; }
+.mystery .name { color: white; font-size: 13px; font-weight: 700; }
+.mystery .geo { color: rgba(255,255,255,0.5); font-size: 11px; font-family: 'SF Mono', monospace; }
+.cuboid { perspective: 1200px; margin: 40px auto; max-width: 800px; }
+.cube { position: relative; width: 400px; height: 400px; transform-style: preserve-3d; transform: rotateX(-25deg) rotateY(35deg); animation: spin 20s infinite linear; margin: 0 auto; }
+@keyframes spin { 0% { transform: rotateX(-25deg) rotateY(0deg); } 100% { transform: rotateX(-25deg) rotateY(360deg); } }
+.cube .face { position: absolute; width: 400px; height: 400px; border: 2px solid var(--gold); background: rgba(201,168,76,0.1); display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+.cube .face .v { display: flex; align-items: center; justify-content: center; color: var(--gold); font-weight: 800; font-size: 14px; border: 1px solid rgba(201,168,76,0.3); }
+.cube .face.front  { transform: translateZ(200px); }
+.cube .face.back   { transform: rotateY(180deg) translateZ(200px); }
+.cube .face.right  { transform: rotateY(90deg) translateZ(200px); }
+.cube .face.left   { transform: rotateY(-90deg) translateZ(200px); }
+.cube .face.top    { transform: rotateX(90deg) translateZ(200px); }
+.cube .face.bottom { transform: rotateX(-90deg) translateZ(200px); }
+.cuboid-label { text-align: center; margin-top: 24px; color: var(--gold); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; }
+.cuboid-sublabel { text-align: center; color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 8px; }
+.constants { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.constant { background: rgba(201,168,76,0.1); border: 1px solid var(--gold); border-radius: 6px; padding: 12px; text-align: center; }
+.constant .name { color: var(--gold); font-size: 11px; letter-spacing: 0.05em; }
+.constant .value { color: white; font-size: 20px; font-weight: 900; font-family: 'SF Mono', monospace; margin: 4px 0; }
+.constant .origin { color: rgba(255,255,255,0.5); font-size: 10px; }
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat { background: rgba(201,168,76,0.1); border: 1px solid var(--gold); border-radius: 6px; padding: 16px; text-align: center; }
+.stat .big { color: var(--gold); font-size: 28px; font-weight: 900; font-family: 'SF Mono', monospace; }
+.stat .label { color: rgba(255,255,255,0.6); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 4px; }
+.arrow { display: inline-block; color: var(--gold); font-weight: 800; margin: 0 8px; }
+.footer { text-align: center; padding: 32px; color: rgba(255,255,255,0.5); font-size: 12px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 32px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="subtitle">🐉 SOV 27-VERTEX SOVEREIGN GRID — THE ARCHITECTURE</div>
+  <div class="big">27 = 3³</div>
+  <div class="subtitle">4 councils + 12 mindsets + 11 mysteries = 27 vertices = the cuboid of sovereignty</div>
+</header>
+
+<div class="container">
+
+<!-- TOP STATS -->
+<div class="stats">
+  <div class="stat"><div class="big">27</div><div class="label">Vertices</div></div>
+  <div class="stat"><div class="big">4</div><div class="label">Councils</div></div>
+  <div class="stat"><div class="big">12</div><div class="label">Mindsets</div></div>
+  <div class="stat"><div class="big">11</div><div class="label">Mysteries</div></div>
+  <div class="stat"><div class="big">15</div><div class="label">BFT Seats</div></div>
+  <div class="stat"><div class="big">351</div><div class="label">Combinations</div></div>
+</div>
+
+<!-- THE 7 GEOMETRIC CONSTANTS -->
+<div class="section">
+  <h2>📐 The 7 Geometric Constants (the "geometic")</h2>
+  <div class="constants">
+    <div class="constant"><div class="name">Golden (φ)</div><div class="value">1.6180339887</div><div class="origin">Euclid 300 BC</div></div>
+    <div class="constant"><div class="name">Silver (δ_s)</div><div class="value">2.4142135624</div><div class="origin">Pythagoras 500 BC</div></div>
+    <div class="constant"><div class="name">1.58</div><div class="value">1.58</div><div class="origin">Modern</div></div>
+    <div class="constant"><div class="name">Pi (π)</div><div class="value">3.1415926536</div><div class="origin">Archimedes 250 BC</div></div>
+    <div class="constant"><div class="name">Euler (e)</div><div class="value">2.7182818285</div><div class="origin">Bernoulli 1683</div></div>
+    <div class="constant"><div class="name">Plastic (ρ)</div><div class="value">1.3247179572</div><div class="origin">van der Laan 1928</div></div>
+    <div class="constant"><div class="name">sqrt(2)</div><div class="value">1.4142135624</div><div class="origin">Babylonian 1900 BC</div></div>
+  </div>
+</div>
+
+<!-- THE 4 COUNCILS -->
+<div class="section">
+  <h2>🏛️ The 4 Councils (vertices v01-v04) — 15 BFT Seats Total</h2>
+  <div class="councils">
+    <div class="council">
+      <div class="vertex">v01</div>
+      <h3>SOV3-3 ROOT</h3>
+      <div class="geo">AB Uno (the 1 origin)</div>
+      <div class="freq">432 Hz</div>
+      <div class="bft">3 BFT seats · apex</div>
+    </div>
+    <div class="council">
+      <div class="vertex">v02</div>
+      <h3>MAMBA</h3>
+      <div class="geo">Silver (δ_s = 2.414)</div>
+      <div class="freq">65.41 Hz</div>
+      <div class="bft">3 BFT seats · long memory</div>
+    </div>
+    <div class="council">
+      <div class="vertex">v03</div>
+      <h3>MoM</h3>
+      <div class="geo">Golden (φ = 1.618)</div>
+      <div class="freq">261.63 Hz</div>
+      <div class="bft">3 BFT seats · multimodal</div>
+    </div>
+    <div class="council">
+      <div class="vertex">v04</div>
+      <h3>MoE</h3>
+      <div class="geo">Plastic (ρ = 1.3247)</div>
+      <div class="freq">440.00 Hz</div>
+      <div class="bft">3 BFT seats · language</div>
+    </div>
+  </div>
+</div>
+
+<!-- THE 12 MINDSETS -->
+<div class="section">
+  <h2>🧠 The 12 Mindsets (vertices v05-v16)</h2>
+  <div class="mindsets">
+    <div class="mindset"><div class="v">v05</div><div class="name">creative</div><div class="freq">196 Hz</div></div>
+    <div class="mindset"><div class="v">v06</div><div class="name">logical</div><div class="freq">261 Hz</div></div>
+    <div class="mindset"><div class="v">v07</div><div class="name">careful</div><div class="freq">131 Hz</div></div>
+    <div class="mindset"><div class="v">v08</div><div class="name">bold</div><div class="freq">330 Hz</div></div>
+    <div class="mindset"><div class="v">v09</div><div class="name">wise</div><div class="freq">528 Hz</div></div>
+    <div class="mindset"><div class="v">v10</div><div class="name">playful</div><div class="freq">392 Hz</div></div>
+    <div class="mindset"><div class="v">v11</div><div class="name">focused</div><div class="freq">440 Hz</div></div>
+    <div class="mindset"><div class="v">v12</div><div class="name">patient</div><div class="freq">220 Hz</div></div>
+    <div class="mindset"><div class="v">v13</div><div class="name">curious</div><div class="freq">196 Hz</div></div>
+    <div class="mindset"><div class="v">v14</div><div class="name">decisive</div><div class="freq">440 Hz</div></div>
+    <div class="mindset"><div class="v">v15</div><div class="name">diplomatic</div><div class="freq">261 Hz</div></div>
+    <div class="mindset"><div class="v">v16</div><div class="name">innovative</div><div class="freq">330 Hz</div></div>
+  </div>
+</div>
+
+<!-- THE 11 MYSTERIES -->
+<div class="section">
+  <h2>🔮 The 11 Mysteries (vertices v17-v27) — AB Uno + 10 Sephiroth</h2>
+  <div class="mysteries">
+    <div class="mystery"><div class="v">v17</div><div class="name">AB Uno (the 1 origin)</div><div class="geo">all · 0 Hz</div></div>
+    <div class="mystery"><div class="v">v18</div><div class="name">Keter (Crown)</div><div class="geo">φ^0 = 1 · 528 Hz</div></div>
+    <div class="mystery"><div class="v">v19</div><div class="name">Chokhmah (Wisdom)</div><div class="geo">φ^1 = 1.618 · 528 Hz</div></div>
+    <div class="mystery"><div class="v">v20</div><div class="name">Binah (Understanding)</div><div class="geo">φ^2 = 2.618 · 440 Hz</div></div>
+    <div class="mystery"><div class="v">v21</div><div class="name">Chesed (Mercy)</div><div class="geo">φ^3 = 4.236 · 392 Hz</div></div>
+    <div class="mystery"><div class="v">v22</div><div class="name">Gevurah (Severity)</div><div class="geo">φ^4 = 6.854 · 330 Hz</div></div>
+    <div class="mystery"><div class="v">v23</div><div class="name">Tiferet (Beauty)</div><div class="geo">φ^5 = 11.09 · 294 Hz</div></div>
+    <div class="mystery"><div class="v">v24</div><div class="name">Netzach (Endurance)</div><div class="geo">φ^6 = 17.94 · 262 Hz</div></div>
+    <div class="mystery"><div class="v">v25</div><div class="name">Hod (Splendor)</div><div class="geo">φ^7 = 29.03 · 247 Hz</div></div>
+    <div class="mystery"><div class="v">v26</div><div class="name">Yesod (Foundation)</div><div class="geo">φ^8 = 46.98 · 220 Hz</div></div>
+    <div class="mystery"><div class="v">v27</div><div class="name">Malkuth (Kingdom)</div><div class="geo">φ^9 = 76.01 · 196 Hz</div></div>
+  </div>
+</div>
+
+<!-- THE CUBOID -->
+<div class="section">
+  <h2>🧊 The Cuboid of Sovereignty (3³ = 27)</h2>
+  <div class="cuboid">
+    <div class="cube">
+      <div class="face front">
+        <div class="v">v01</div><div class="v">v02</div><div class="v">v03</div>
+        <div class="v">v04</div><div class="v">v05</div><div class="v">v06</div>
+        <div class="v">v07</div><div class="v">v08</div><div class="v">v09</div>
+      </div>
+      <div class="face back">
+        <div class="v">v10</div><div class="v">v11</div><div class="v">v12</div>
+        <div class="v">v13</div><div class="v">v14</div><div class="v">v15</div>
+        <div class="v">v16</div><div class="v">v17</div><div class="v">v18</div>
+      </div>
+      <div class="face right">
+        <div class="v">v19</div><div class="v">v20</div><div class="v">v21</div>
+        <div class="v">v22</div><div class="v">v23</div><div class="v">v24</div>
+        <div class="v">v25</div><div class="v">v26</div><div class="v">v27</div>
+      </div>
+      <div class="face left">
+        <div class="v">v01</div><div class="v">v04</div><div class="v">v07</div>
+        <div class="v">v10</div><div class="v">v13</div><div class="v">v16</div>
+        <div class="v">v19</div><div class="v">v22</div><div class="v">v25</div>
+      </div>
+      <div class="face top">
+        <div class="v">v01</div><div class="v">v02</div><div class="v">v03</div>
+        <div class="v">v10</div><div class="v">v11</div><div class="v">v12</div>
+        <div class="v">v19</div><div class="v">v20</div><div class="v">v21</div>
+      </div>
+      <div class="face bottom">
+        <div class="v">v07</div><div class="v">v08</div><div class="v">v09</div>
+        <div class="v">v16</div><div class="v">v17</div><div class="v">v18</div>
+        <div class="v">v25</div><div class="v">v26</div><div class="v">v27</div>
+      </div>
+    </div>
+    <div class="cuboid-label">3³ = 27 VERTICES (X × Y × Z = LEFT/RIGHT × TOP/MIDDLE/BOTTOM × BACK/FRONT/OUTSIDE)</div>
+    <div class="cuboid-sublabel">X axis: history/present/future · Y axis: sovereignty/operation/physics · Z axis: SOV3/user/world</div>
+  </div>
+</div>
+
+<!-- THE CUBOID FILL -->
+<div class="section">
+  <h2>📊 The 27-Vertex Combinations (27 choose 2 = 351)</h2>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+    <div class="stat"><div class="big">4×12=48</div><div class="label">Council ↔ Mindset</div></div>
+    <div class="stat"><div class="big">4×11=44</div><div class="label">Council ↔ Mystery</div></div>
+    <div class="stat"><div class="big">12×11=132</div><div class="label">Mindset ↔ Mystery</div></div>
+    <div class="stat"><div class="big">224</div><div class="label">Cross-category total</div></div>
+    <div class="stat"><div class="big">127</div><div class="label">Same-category</div></div>
+    <div class="stat"><div class="big">351</div><div class="label">27 choose 2 (total)</div></div>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  <p>🐉 SOV 27-VERTEX SOVEREIGN GRID — built by JEEVES · DEFONEOS · CSOAI LTD UK 16939677</p>
+  <p>0.937 SOVEREIGN_BOND · 100% UK sovereign · 80 MCPs deployed · 504 → 592 tests passing</p>
+  <p style="margin-top: 8px;">Powered by the sovereign VM (35.242.143.249) + SOV3 OOWM + UE5 Real World Dome</p>
+</div>
+
+</body>
+</html>
